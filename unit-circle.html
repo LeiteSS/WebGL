@@ -1,0 +1,42 @@
+<!-- Licensed under a BSD license. See license.html for license -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Unit Circle</title>
+<link type="text/css" href="src/css/ui-lightness/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+<link type="text/css" href="src/css/style.css" rel="stylesheet" />
+<style>
+#ui {
+    width: 200px;
+}
+</style>
+</head>
+<body>
+<div class="description">
+Drag Circle
+</div>
+<div id="example"></div>
+</body>
+<script src="src/js/jquery-1.7.1.min.js"></script>
+<script src="src/js/jquery-ui-1.8.16.custom.min.js"></script>
+<script src="src/js/jquery.mousecapture.js"></script>
+<script src="src/js/jquery-gman-circle.js"></script>
+
+<script src="src/js/webgl-utils.js"></script>
+<script src="src/js/lessons-helper.js"></script> <!-- you can and should delete this script. it is only used on the site to help with errors -->
+<script>
+"use strict";
+
+$(function(){
+  $("#example").gmanUnitCircle({
+    slide: function(e,u) {
+      //console.log(u.x + ", " + u.y + ", " + u.angle);
+    }
+  });
+});
+</script>
+</html>
+
+

@@ -1,0 +1,44 @@
+<!-- Licensed under a BSD license. See license.html for license -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>WebGL - precision - check canvas bits</title>
+<link type="text/css" href="src/css/style.css" rel="stylesheet" />
+</head>
+<body>
+  <div id="result"></div>
+</body>
+<script src="src/js/webgl-utils.js"></script>
+<script>
+"use strict";
+
+// This entire program is only needed because of a bug in Safari.
+// Safari doesn't correctly report precision from getShaderPrecisionFormat
+// at least as of April 2020
+// see: https://bugs.webkit.org/show_bug.cgi?id=211013
+
+function main() {
+  // Get A WebGL context
+  /** @type {HTMLCanvasElement} */
+  const canvas = document.createElement("canvas");
+  const gl = canvas.getContext("webgl");
+  if (!gl) {
+    return;
+  }
+
+  const bitsInCanvas =
+    gl.getParameter(gl.RED_BITS) +
+    gl.getParameter(gl.GREEN_BITS) +
+    gl.getParameter(gl.BLUE_BITS) +
+    gl.getParameter(gl.ALPHA_BITS);
+  const elem = document.querySelector('#result');
+  elem.textContent = `canvas has ${bitsInCanvas} bits`;
+}
+
+main();
+</script>
+</html>
+
+

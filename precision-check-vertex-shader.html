@@ -1,0 +1,103 @@
+<!-- Licensed under a BSD license. See license.html for license -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>WebGL - precision - check if mediump is really mediump in vertex shader</title>
+<link type="text/css" href="src/css/style.css" rel="stylesheet" />
+</head>
+<body>
+  <div id="result"></div>
+</body>
+<script src="src/js/webgl-utils.js"></script>
+<script>
+"use strict";
+
+// This entire program is only needed because of a bug in Safari.
+// Safari doesn't correctly report precision from getShaderPrecisionFormat
+// at least as of April 2020
+// see: https://bugs.webkit.org/show_bug.cgi?id=211013
+
+function main() {
+  // Get A WebGL context
+  /** @type {HTMLCanvasElement} */
+  const canvas = document.createElement("canvas");
+  const gl = canvas.getContext("webgl");
+  if (!gl) {
+    return;
+  }
+
+  const vs = `
+  attribute vec4 position;  // needed because of another bug in Safari
+  uniform mediump vec3 v;
+  varying mediump vec4 v_result;
+  void main() {
+    gl_Position = position;
+    gl_PointSize = 1.0;
+    v_result = vec4(normalize(v) * 0.5 + 0.5, 1);
+  }
+  `;
+
+  const fs = `
+  precision mediump float;
+  varying mediump vec4 v_result;
+  void main() {
+    gl_FragColor = v_result;
+  }
+  `;
+
+  const program = webglUtils.createProgramFromSources(gl, [vs, fs]);
+  const positionLocation = gl.getAttribLocation(program, 'position');
+  const vLocation = gl.getUniformLocation(program, 'v');
+
+  // create a buffer and setup an attribute
+  // We wouldn't need this except for a bug in Safari.
+  // See https://webglfundamentals.org/webgl/lessons/webgl-smallest-programs.html
+  // and https://bugs.webkit.org/show_bug.cgi?id=197592
+  {
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, 1, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(positionLocation);
+    gl.vertexAttribPointer(
+      positionLocation,
+      1,                // pull 1 value per vertex shader iteration from buffer
+      gl.UNSIGNED_BYTE, // type of data in buffer,
+      false,            // don't normalize
+      0,                // bytes to advance per iteration (0 = compute from size and type)
+      0,                // offset into buffer
+    );
+  }
+
+  gl.viewport(0, 0, 1, 1);
+  gl.useProgram(program);
+
+  // we're going to compute the normalize vector of
+  // (sqrt(2^31-1), sqrt(2^31-1), sqrt(2^31-1))
+  // which should be impossible on mediump
+  const value = 2 ** 31 - 1;
+  const input = Math.sqrt(value);
+  const expected = ((input / Math.sqrt(input * input * 3)) * 0.5 + 0.5) * 255 | 0;
+
+  gl.uniform3f(vLocation, input, input, input);
+  gl.drawArrays(
+    gl.POINTS,
+    0, // offset
+    1, // number of vertices to process
+  );
+
+  const pixel = new Uint8Array(4);
+  gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+
+  const isMediumpActuallyMediump = Math.abs(pixel[0] - expected) > 16;
+  const elem = document.querySelector('#result');
+  elem.textContent = isMediumpActuallyMediump
+    ? 'vertex shader mediump is really mediump'
+    : 'vertex shader mediump is probably highp';
+}
+
+main();
+</script>
+</html>
+
+

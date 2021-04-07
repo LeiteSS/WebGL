@@ -1,0 +1,45 @@
+<!-- Licensed under a BSD license. See license.html for license -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>WebGL - Simple Point</title>
+  </head>
+  <style>
+    canvas { border: 1px solid black; }
+  </style>
+  <body>
+    <canvas id="c"></canvas>
+  </body>
+</html>
+<script src="src/js/webgl-utils.js"></script>
+<script>
+'use strict';
+const gl = document.querySelector('#c').getContext('webgl');
+
+const vs = `
+// vertex shader
+void main() {
+  gl_Position = vec4(0, 0, 0, 1);  // center
+  gl_PointSize = 120.0;
+} 
+`;
+
+const fs = `
+// fragment shader
+precision mediump float;
+void main() {
+  gl_FragColor = vec4(1, 0, 0, 1);  // red
+}
+`;
+
+// setup GLSL program
+const program = webglUtils.createProgramFromSources(gl, [vs, fs]);
+gl.useProgram(program);
+
+const offset = 0;
+const count = 1;
+gl.drawArrays(gl.POINTS, offset, count);
+</script>
+
